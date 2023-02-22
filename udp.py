@@ -1,5 +1,4 @@
 import socket
-from publish import init_mqtt
 from config import UDP_IP, UDP_PORT
 
 def udp_init():
