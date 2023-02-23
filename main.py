@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     print("Waiting to receive data...")
     while True:
-        data, addr = sock.recvfrom(256)
+        data, addr = sock.recvfrom(512)
         print("received:", data, " from", addr)
 
 
