@@ -3,7 +3,7 @@ import certifi
 import time
 import json
 from datetime import datetime
-from config import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PW
+from config import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PW, MQTT_SOURCE
 
 def on_connect(client, userdata, flag, rc):
     print("Successfully connected to MQTT server!")
@@ -11,7 +11,7 @@ def on_connect(client, userdata, flag, rc):
 def make_message(data):
     msg = json.loads(data)
     msg["type"] = "data"
-    msg["source"] = "4341524536"
+    msg["source"] = MQTT_SOURCE
 
     return json.dumps(msg)
 
