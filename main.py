@@ -1,5 +1,6 @@
 from udp import udp_init
 from mqtt import mqtt_init, make_message
+from config import CARE_TOPIC
 
 
 if __name__ == "__main__":
@@ -10,10 +11,10 @@ if __name__ == "__main__":
 
     print("Waiting to receive data...")
     while True:
-        data, addr = sock.recvfrom(256)
+        data, addr = sock.recvfrom(512)
         print("received:", data, " from", addr)
         msg = make_message(data)
-        client.publish('CARE6/UAV', msg, 1)
+        client.publish(CARE_TOPIC, msg, 1)
 
 
 
