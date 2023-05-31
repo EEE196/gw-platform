@@ -1,5 +1,6 @@
 //--------------------------wEBSOCKET----------------
-var socket = new WebSocket('ws://localhost:8080');
+import { WebSocketServer } from 'ws';
+const socket = new WebSocketServer({ port: 8080 });
 
 socket.onopen = function() {
   console.log('WebSocket connection established.');
@@ -11,15 +12,16 @@ socket.onclose = function(event) {
 };
 
 //--------------------------------lora/udp code
-var udp = require('dgram');
-var lora = require('lora-packet');
+import dgram from 'node:dgram';
+import lora_packet from 'lora-packet'
+
 const NwkSKey = Buffer.from("00000000000000000000000000000000", "hex");
 const AppSKey = Buffer.from("00000000000000000000000000000000", "hex");
 
 // --------------------creating a udp server --------------------
 
 // creating a udp server
-var server = udp.createSocket('udp4');
+var server = dgram.createSocket('udp4');
 
 // emits when any error occurs
 server.on('error',function(error){
@@ -42,16 +44,21 @@ server.on('message',function(msg,info){
 	console.log("FRMPayload=" + packet.FRMPayload.toString("hex"));
 
 	// check MIC
-	console.log("MIC check=" + (lora.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
+	console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
 
 	// calculate MIC based on contents
-	console.log("calculated MIC=" + lora.calculateMIC(packet, NwkSKey).toString("hex"));
+	console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
 
 	// decrypt payload
-	console.log("Decrypted (ASCII)='" + lora.decrypt(packet, AppSKey, NwkSKey).toString() + "'");
-	console.log("Decrypted (hex)='0x" + lora.decrypt(packet, AppSKey, NwkSKey).toString("hex") + "'");
-	if (lora.verifyMIC(packet, NwkSKey) ? true : false) {
-		socket.send(lora.decrypt(packet, AppSKey, NwkSKey))
+	console.log("Decrypted (ASCII)='" + lora_packet.decrypt(packet, AppSKey, NwkSKey).toString() + "'");
+	console.log("Decrypted (hex)='0x" + lora_packet.decrypt(packet, AppSKey, NwkSKey).toString("hex") + "'");
+	if (lora_packt.verifyMIC(packet, NwkSKey) ? true : false) {
+		socket.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
+		wss.clients.forEach(function each(client) {
+		      if (client !== ws && client.readyState === WebSocket.OPEN) {
+			client.send(packet, {compress: false});
+		      }
+		    });
 	}
 	  } catch {};
 });
