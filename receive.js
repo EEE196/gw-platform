@@ -1,3 +1,16 @@
+//--------------------------wEBSOCKET----------------
+var socket = new WebSocket('ws://localhost:8080');
+
+socket.onopen = function() {
+  console.log('WebSocket connection established.');
+  
+};
+
+socket.onclose = function(event) {
+  console.log('WebSocket connection closed with code:', event.code);
+};
+
+//--------------------------------lora/udp code
 var udp = require('dgram');
 var lora = require('lora-packet');
 const NwkSKey = Buffer.from("00000000000000000000000000000000", "hex");
@@ -29,14 +42,17 @@ server.on('message',function(msg,info){
 	console.log("FRMPayload=" + packet.FRMPayload.toString("hex"));
 
 	// check MIC
-	console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
+	console.log("MIC check=" + (lora.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
 
 	// calculate MIC based on contents
-	console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
+	console.log("calculated MIC=" + lora.calculateMIC(packet, NwkSKey).toString("hex"));
 
 	// decrypt payload
-	console.log("Decrypted (ASCII)='" + lora_packet.decrypt(packet, AppSKey, NwkSKey).toString() + "'");
-	console.log("Decrypted (hex)='0x" + lora_packet.decrypt(packet, AppSKey, NwkSKey).toString("hex") + "'");
+	console.log("Decrypted (ASCII)='" + lora.decrypt(packet, AppSKey, NwkSKey).toString() + "'");
+	console.log("Decrypted (hex)='0x" + lora.decrypt(packet, AppSKey, NwkSKey).toString("hex") + "'");
+	if (lora.verifyMIC(packet, NwkSKey) ? true : false) {
+		socket.send(lora.decrypt(packet, AppSKey, NwkSKey))
+	}
 	  } catch {};
 });
 
