@@ -28,7 +28,7 @@ server.on('error',function(error){
   console.log('Error: ' + error);
   server.close();
 });
-
+clent.send("packet");
 // emits on new datagram msg
 server.on('message',function(msg,info){
   try {
