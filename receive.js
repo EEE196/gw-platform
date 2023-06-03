@@ -1,16 +1,14 @@
 //--------------------------wEBSOCKET----------------
-import { WebSocketServer } from 'ws';
-const socket = new WebSocketServer({ port: 8080 });
+import {Buffer} from 'node:buffer';
+import WebSocket from 'ws';
 
-socket.onopen = function() {
-  console.log('WebSocket connection established.');
-  
-};
+const ws = new WebSocket('ws://localhost:8080');
 
-socket.onclose = function(event) {
-  console.log('WebSocket connection closed with code:', event.code);
-};
+ws.on('error', console.error);
 
+ws.on('open', function open() {
+  ws.send(Buffer.from('45', 'hex'));
+});
 //--------------------------------lora/udp code
 import dgram from 'node:dgram';
 import lora_packet from 'lora-packet'
@@ -28,7 +26,6 @@ server.on('error',function(error){
   console.log('Error: ' + error);
   server.close();
 });
-clent.send("packet");
 // emits on new datagram msg
 server.on('message',function(msg,info){
   try {
