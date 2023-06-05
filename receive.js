@@ -32,8 +32,9 @@ server.on('message',function(msg,info){
 	msg = msg.subarray(12).toString('utf8');
 	msg = JSON.parse(msg);
 	msg = msg['rxpk'][0]['data']
-	const packet = lora.fromWire(msg);
-
+	console.log(msg)
+	const packet = lora.fromWire(Buffer.from(msg, 'base64'));
+	console.log('mark');
 	console.log("packet.toString()=\n" + packet);
 
 	// e.g. retrieve payload elements
