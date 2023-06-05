@@ -1,3 +1,3 @@
 [submodule "lora/wsServer"]
 	path = lora/wsServer
-	url = https://github.com/Theldus/wsServer.git
+	url = https://github.com/EEE196/wsServer
