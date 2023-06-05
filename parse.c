@@ -1,62 +1,114 @@
-#include <libwebsockets.h>
+
+// C program to read particular bytes
+// from the existing file
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
+#include <dirent.h>
 
-static struct lws *client_wsi = NULL;
-static int connection_established = 0;
+// Maximum range of bytes
+#define MAX 30000
+typedef struct{
 
-// WebSocket callback function
-static int callback(struct lws *wsi, enum lws_callback_reasons reason,
-                    void *user, void *in, size_t len)
+
+    // GGA - Global Positioning System Fixed Data
+    float nmea_longitude;
+    float nmea_latitude;
+    float utc_time;
+    // RMC - Recommended Minimmum Specific GNS Data
+    int date;
+} GPS_t;
+typedef struct {
+		float co2_ppm;
+		float temperature;
+		float relative_humidity;
+	} CO_t;
+struct sps30_measurement {
+    float mc_2p5;
+    float mc_10p0;
+    float nc_2p5;
+    float nc_10p0;
+    uint16_t SO_ppm;
+};
+typedef struct DATA
 {
-    switch (reason) {
-        case LWS_CALLBACK_CLIENT_ESTABLISHED:
-            printf("WebSocket connection established.\n");
-            connection_established = 1;
-            break;
+	struct sps30_measurement PM_Data;
+	GPS_t GPS_Data;
+	CO_t CO_Data;
+} CollatedData;
 
-        case LWS_CALLBACK_CLIENT_RECEIVE:
-            // Process received message
-            printf("Received message from server: %.*s\n", (int)len, (char *)in);
-            break;
+void writeCollatedData(FILE* file, const CollatedData* data) {
+    
+    // Write GPS data
+    fprintf(file, "%f,%f,%f,%d,", data->GPS_Data.nmea_longitude, data->GPS_Data.nmea_latitude, data->GPS_Data.utc_time, data->GPS_Data.date);
 
-        case LWS_CALLBACK_CLIENT_WRITEABLE:
-            // Send a message to the server
-            if (connection_established) {
-                char *message = "Hello, server!";
-                int message_len = strlen(message);
-                lws_write(client_wsi, (unsigned char *)message, message_len, LWS_WRITE_TEXT);
-            }
-            break;
+    // Write CO data
+    fprintf(file, "%f,%d,%f,%f,", data->CO_Data.co2_ppm, data->PM_Data.SO_ppm, data->CO_Data.temperature, data->CO_Data.relative_humidity);
 
-        case LWS_CALLBACK_CLOSED:
-            printf("WebSocket connection closed.\n");
-            lws_context_destroy(wsi->context);
-            break;
-
-        default:
-            break;
-    }
-
-    return 0;
+    // Write PM data
+    fprintf(file, "%f,%f,%f,%f\n", data->PM_Data.mc_2p5, data->PM_Data.mc_10p0, data->PM_Data.nc_2p5, data->PM_Data.nc_10p0);
 }
 
-int main(void)
+int main(int argc, char* argv[])
 {
-    struct lws_context_creation_info info;
-    struct lws_client_connect_info ccinfo;
-    struct lws_protocols protocol;
-    struct lws_context *context;
-    const char *address = "localhost";
-    int port = 8080;
-    const char *path = "/";
-    const char *origin = "origin";
+	CollatedData collatedData;
+	// Pointer to the file to be
+	// read from
+	DIR* d;
+	struct dirent *dir;
+	FILE* fileptr;
+	long filelen;
+	char* buffer;
 
-    memset(&info, 0, sizeof(info));
-    memset(&ccinfo, 0, sizeof(ccinfo));
-    memset(&protocol, 0, sizeof(protocol));
+	d = opendir(".");
+	if (d) 
+	{
+		while ((dir = readdir(d)) != NULL)
+		{
+			/* On linux/Unix we don't want current and parent directories
+         		* If you're on Windows machine remove this two lines
+         		*/
+			if (!strcmp (dir->d_name, "."))
+			    continue;
+			if (!strcmp (dir->d_name, ".."))    
+			    continue;
+			fileptr = fopen(dir->d_name, "rb");
+			if (fileptr != NULL)
+			{
+				// Get the filename
+				char* filename = dir->d_name;
 
-    protocol.name = "my-protocol";
-    protocol.callback = callback;
+				// Rename the file extension to ".csv"
+				char* extension = strrchr(filename, '.');
+				if (extension != NULL) {
+				    strcpy(extension, ".csv");
+				} else {
+				    strcat(filename, ".csv");
+				}
+				printf("%s\n", filename);
 
+				fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
+				filelen = ftell(fileptr);             // Get the current byte offset in the file
+				rewind(fileptr);                      // Jump back to the beginning of the file
+
+				buffer = (char *)malloc(filelen * sizeof(char)); // Enough memory for the file
+				fread(buffer, filelen, 1, fileptr); // Read in the entire file
+
+				int numChunks = filelen / sizeof(collatedData);
+
+				// Write column names
+            			FILE* dataFile = fopen(filename, "r");
+				fprintf(dataFile, "Longitude E,Latitude N,UTC Time,Date,CO2 ppm,SO2 ppm,Temperature °,Relative Humidity %,PM2.5 ppm,PM10 ppm,NC2.5 #/cm^3,NC10 #/cm^3\n");
+				for(int i = 0; i<numChunks; i++) {
+					char* chunk = buffer + (i+sizeof(collatedData));
+					memcpy(&collatedData, chunk, sizeof(collatedData));
+					writeCollatedData(dataFile, &collatedData);
+				}
+
+				fclose(fileptr);
+				fclose(dataFile);
+			}
+		}
+	}
+}
