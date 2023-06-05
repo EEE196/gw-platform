@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 	long filelen;
 	char* buffer;
 
-	d = opendir(".");
+	d = opendir("./input");
 	if (d) 
 	{
 		while ((dir = readdir(d)) != NULL)
