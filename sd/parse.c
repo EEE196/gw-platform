@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 				int numChunks = filelen / sizeof(collatedData);
 
 				// Write column names
-            			FILE* dataFile = fopen(filename, "r");
+            			FILE* dataFile = fopen(filename, "rw");
 				fprintf(dataFile, "Longitude E,Latitude N,UTC Time,Date,CO2 ppm,SO2 ppm,Temperature °,Relative Humidity %,PM2.5 ppm,PM10 ppm,NC2.5 #/cm^3,NC10 #/cm^3\n");
 				for(int i = 0; i<numChunks; i++) {
 					char* chunk = buffer + (i+sizeof(collatedData));
