@@ -49,14 +49,17 @@ server.on('message',function(msg,info){
 		}
 
 			const packet = lora_packet.fromWire(Buffer.from(test, 'base64'))
-		// check MIC
-		console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
+		var sender = packet.getBuffers().DevAddr.toString("hex")
+		if (sender === "deadbeef") {
+			// check MIC
+			console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
 
-		// calculate MIC based on contents
-		console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
+			// calculate MIC based on contents
+			console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
 
-		if (lora_packet.verifyMIC(packet, NwkSKey) ? true : false) {
-			ws.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
+			if (lora_packet.verifyMIC(packet, NwkSKey) ? true : false) {
+				ws.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
+			}
 		}
 	} catch {}
 });
