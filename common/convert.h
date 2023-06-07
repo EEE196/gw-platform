@@ -5,7 +5,7 @@ typedef struct{
     float nmea_latitude;
     float utc_time;
     // RMC - Recommended Minimmum Specific GNS Data
-    int date;
+    uint32_t date;
 } GPS_t;
 typedef struct {
 		float co2_ppm;
@@ -22,8 +22,8 @@ struct sps30_measurement {
 typedef struct DATA
 {
 	struct sps30_measurement PM_Data;
-	GPS_t GPS_Data;
 	CO_t CO_Data;
+	GPS_t GPS_Data;
 } CollatedData;
 
 

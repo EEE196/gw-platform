@@ -31,7 +31,11 @@ server.on('message',function(msg,info){
   try {
 	msg = msg.subarray(12).toString('utf8');
 	msg = JSON.parse(msg);
-	msg = msg['rxpk'][0]['data']
+	if (msg.hasOwnProperty('rxpk') && Array.isArray(msg.rxpk) && msg.rxpk.length === 1) {
+		msg = msg['rxpk'][0]['data']
+	} else {
+		msg = msg['rxpk'][1]['data']
+	}
 	const packet = lora_packet.fromWire(Buffer.from(msg, 'base64'));
 
 	// check MIC
@@ -40,13 +44,8 @@ server.on('message',function(msg,info){
 	// calculate MIC based on contents
 	console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
 
-	if (lora_packt.verifyMIC(packet, NwkSKey) ? true : false) {
-		socket.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
-		wss.clients.forEach(function each(client) {
-		      if (client !== ws && client.readyState === WebSocket.OPEN) {
-			client.send(packet, {compress: false});
-		      }
-		    });
+	if (lora_packet.verifyMIC(packet, NwkSKey) ? true : false) {
+		ws.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
 	}
 	  } catch {};
 });
