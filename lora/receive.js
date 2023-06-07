@@ -28,26 +28,37 @@ server.on('error',function(error){
 });
 // emits on new datagram msg
 server.on('message',function(msg,info){
-  try {
-	msg = msg.subarray(12).toString('utf8');
-	msg = JSON.parse(msg);
-	if (msg.hasOwnProperty('rxpk') && Array.isArray(msg.rxpk) && msg.rxpk.length === 1) {
-		msg = msg['rxpk'][0]['data']
-	} else {
-		msg = msg['rxpk'][1]['data']
-	}
-	const packet = lora_packet.fromWire(Buffer.from(msg, 'base64'));
+	try {
+		msg = msg.subarray(12).toString('utf8');
+		msg = JSON.parse(msg);
+		var test;
+		if (msg.hasOwnProperty('rxpk') && Array.isArray(msg.rxpk) && msg.rxpk.length === 1) {
+			var test = msg['rxpk'][0]['data']
 
-	// check MIC
-	console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
+		} else {
+			msg.rxpk.every(function(element, index) {
+				test = element['data'];
+				const test_packet = lora_packet.fromWire(Buffer.from(test, 'base64'));
+				if (lora_packet.verifyMIC(test_packet, NwkSKey)) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			})	
+		}
 
-	// calculate MIC based on contents
-	console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
+			const packet = lora_packet.fromWire(Buffer.from(test, 'base64'))
+		// check MIC
+		console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
 
-	if (lora_packet.verifyMIC(packet, NwkSKey) ? true : false) {
-		ws.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
-	}
-	  } catch {};
+		// calculate MIC based on contents
+		console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
+
+		if (lora_packet.verifyMIC(packet, NwkSKey) ? true : false) {
+			ws.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
+		}
+	} catch {}
 });
 
 //emits when socket is ready and listening for datagram msgs
