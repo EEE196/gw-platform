@@ -32,14 +32,7 @@ server.on('message',function(msg,info){
 	msg = msg.subarray(12).toString('utf8');
 	msg = JSON.parse(msg);
 	msg = msg['rxpk'][0]['data']
-	console.log(msg)
-	const packet = lora.fromWire(Buffer.from(msg, 'base64'));
-	console.log('mark');
-	console.log("packet.toString()=\n" + packet);
-
-	// e.g. retrieve payload elements
-	console.log("packet MIC=" + packet.MIC.toString("hex"));
-	console.log("FRMPayload=" + packet.FRMPayload.toString("hex"));
+	const packet = lora_packet.fromWire(Buffer.from(msg, 'base64'));
 
 	// check MIC
 	console.log("MIC check=" + (lora_packet.verifyMIC(packet, NwkSKey) ? "OK" : "fail"));
@@ -47,9 +40,6 @@ server.on('message',function(msg,info){
 	// calculate MIC based on contents
 	console.log("calculated MIC=" + lora_packet.calculateMIC(packet, NwkSKey).toString("hex"));
 
-	// decrypt payload
-	console.log("Decrypted (ASCII)='" + lora_packet.decrypt(packet, AppSKey, NwkSKey).toString() + "'");
-	console.log("Decrypted (hex)='0x" + lora_packet.decrypt(packet, AppSKey, NwkSKey).toString("hex") + "'");
 	if (lora_packt.verifyMIC(packet, NwkSKey) ? true : false) {
 		socket.send(lora_packet.decrypt(packet, AppSKey, NwkSKey))
 		wss.clients.forEach(function each(client) {
