@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 
 # List of CSV filenames
 filenames = ['mark.csv']  # Add more filenames if needed
@@ -28,6 +29,12 @@ for i, filename in enumerate(filenames):
     nc25 = df['NC2.5 #/cm^3']
     nc10 = df['NC10 #/cm^3']
 
+    z_scores = np.abs(stats.zscore(df['SO2 ppm']))
+    threshold = 3
+    outlier_mask = z_scores > threshold
+    df_filtered = df.copy()
+    df_filtered.loc[outlier_mask, 'SO2 ppm'] = np.nan
+    so2_ppm = df_filtered['SO2 ppm']
     # Extract hours, minutes, and seconds from the first element
     hours1 = int(str(utc_time[0])[:2])
     minutes1 = int(str(utc_time[0])[2:4])
