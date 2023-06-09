@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 	long filelen;
 	char* buffer;
 
-	d = opendir("./input");
+	d = opendir(".");
 	if (d) 
 	{
 		while ((dir = readdir(d)) != NULL)
@@ -42,7 +42,9 @@ int main(int argc, char* argv[])
 			    continue;
 			if (!strcmp (dir->d_name, ".."))    
 			    continue;
-			fileptr = fopen(dir->d_name, "rb");
+			if(!strcmp (dir->d_name, "a.exe"))
+			    continue;
+			fileptr = fopen(dir->d_name, "r");
 			if (fileptr != NULL)
 			{
 				// Get the filename
@@ -55,7 +57,6 @@ int main(int argc, char* argv[])
 				} else {
 				    strcat(filename, ".csv");
 				}
-				printf("%s\n", filename);
 
 				fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
 				filelen = ftell(fileptr);             // Get the current byte offset in the file
@@ -67,10 +68,10 @@ int main(int argc, char* argv[])
 				int numChunks = filelen / sizeof(collatedData);
 
 				// Write column names
-            			FILE* dataFile = fopen(filename, "rw");
-				fprintf(dataFile, "Longitude E,Latitude N,UTC Time,Date,CO2 ppm,SO2 ppm,Temperature °,Relative Humidity %,PM2.5 ppm,PM10 ppm,NC2.5 #/cm^3,NC10 #/cm^3\n");
+            			FILE* dataFile = fopen(filename, "w+");
+				fprintf(dataFile, "Longitude E,Latitude N,UTC Time,Date,CO2 ppm,SO2 ppm,Temperature °,Relative Humidity,PM2.5 ppm,PM10 ppm,NC2.5 #/cm^3,NC10 #/cm^3\n");
 				for(int i = 0; i<numChunks; i++) {
-					char* chunk = buffer + (i+sizeof(collatedData));
+					char* chunk = buffer + (i*sizeof(collatedData));
 					memcpy(&collatedData, chunk, sizeof(collatedData));
 					writeCollatedData(dataFile, &collatedData);
 				}
