@@ -53,56 +53,56 @@ for i, filename in enumerate(filenames):
         # Calculate time difference in seconds and append to the list
         time_diff.append(total_seconds2 - (hours1 * 3600 + minutes1 * 60 + seconds1))
     # Plot Temperature
-    axs[0, 0].plot(time_diff, temperature, marker='o', label=filename)
+    axs[0, 0].plot(time_diff, temperature, marker='o', label=filename, markersize=1)
     axs[0, 0].set_xlabel('time (s)')
     axs[0, 0].set_ylabel('°C')
     axs[0, 0].set_title('Temperature')
     axs[0, 0].legend()
 
     # Plot Relative Humidity
-    axs[0, 1].plot(time_diff, humidity, marker='o', label=filename)
+    axs[0, 1].plot(time_diff, humidity, marker='o', label=filename, markersize=1)
     axs[0, 1].set_xlabel('time (s)')
     axs[0, 1].set_ylabel('%')
     axs[0, 1].set_title('Relative Humidity')
     axs[0, 1].legend()
 
     # Plot CO2 ppm
-    axs[1, 0].plot(time_diff, co2_ppm, marker='o', label=filename)
+    axs[1, 0].plot(time_diff, co2_ppm, marker='o', label=filename, markersize=1)
     axs[1, 0].set_xlabel('time (s)')
     axs[1, 0].set_ylabel('ppm')
     axs[1, 0].set_title('CO2 concentration')
     axs[1, 0].legend()
 
     # Plot SO2 ppm
-    axs[1, 1].plot(time_diff, so2_ppm, marker='o', label=filename)
+    axs[1, 1].plot(time_diff, so2_ppm, marker='o', label=filename, markersize=1)
     axs[1, 1].set_xlabel('time (s)')
     axs[1, 1].set_ylabel('ppm')
     axs[1, 1].set_title('SO2 Concentration')
     axs[1, 1].legend()
 
     # Plot PM2.5 ppm
-    axs[2, 0].plot(time_diff, pm25_ppm, marker='o', label=filename)
+    axs[2, 0].plot(time_diff, pm25_ppm, marker='o', label=filename, markersize=1)
     axs[2, 0].set_xlabel('time (s)')
     axs[2, 0].set_ylabel('ppm')
     axs[2, 0].set_title('PM2.5 Mass Concentration')
     axs[2, 0].legend()
 
     # Plot nc2.5 #/cm^3
-    axs[2, 1].plot(time_diff, nc25, marker='o', label=filename)
+    axs[2, 1].plot(time_diff, nc25, marker='o', label=filename, markersize=1)
     axs[2, 1].set_xlabel('time (s)')
     axs[2, 1].set_ylabel('#/cm^3')
     axs[2, 1].set_title('PM2.5 Number Concentration')
     axs[2, 1].legend()
 
     # Plot PM10 ppm
-    axs[3, 0].plot(time_diff, pm10_ppm, marker='o', label=filename)
+    axs[3, 0].plot(time_diff, pm10_ppm, marker='o', label=filename, markersize=1)
     axs[3, 0].set_xlabel('time (s)')
     axs[3, 0].set_ylabel('ppm')
     axs[3, 0].set_title('PM10 Mass Concentration')
     axs[3, 0].legend()
 
     # Plot nc10 #/cm^3
-    axs[3, 1].plot(time_diff, nc10, marker='o', label=filename)
+    axs[3, 1].plot(time_diff, nc10, marker='o', label=filename, markersize=1)
     axs[3, 1].set_xlabel('time (s)')
     axs[3, 1].set_ylabel('#/cm^3')
     axs[3, 1].set_title('PM10 Number Concentration')
