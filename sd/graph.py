@@ -4,7 +4,7 @@ import numpy as np
 from scipy import stats
 
 # List of CSV filenames
-filenames = ['mark.csv']  # Add more filenames if needed
+filenames = ['000000-34321.csv']  # Add more filenames if needed
 title = 'Air Quality Parameters'
 
 # Create subplots for each parameter
@@ -19,15 +19,15 @@ for i, filename in enumerate(filenames):
     # Read the CSV file
     df = pd.read_csv(filename)
     # Extract the relevant columns
-    utc_time = df['UTC Time']
+    time_diff = df['UTC Time']
     co2_ppm = df['CO2 ppm']
     so2_ppm = df['SO2 ppm']
     temperature = df['Temperature °']
     humidity = df['Relative Humidity']
-    pm25_ppm = df['PM2.5 ppm']
-    pm10_ppm = df['PM10 ppm']
+    pm25_ppm = df['MC2.5 #/cm^3']
+    pm10_ppm = df['MC10.0 #/cm^3']
     nc25 = df['NC2.5 #/cm^3']
-    nc10 = df['NC10 #/cm^3']
+    nc10 = df['NC10.0 #/cm^3']
 
     z_scores = np.abs(stats.zscore(df['SO2 ppm']))
     threshold = 3
@@ -35,6 +35,8 @@ for i, filename in enumerate(filenames):
     df_filtered = df.copy()
     df_filtered.loc[outlier_mask, 'SO2 ppm'] = np.nan
     so2_ppm = df_filtered['SO2 ppm']
+    """
+
     # Extract hours, minutes, and seconds from the first element
     hours1 = int(str(utc_time[0])[:2])
     minutes1 = int(str(utc_time[0])[2:4])
@@ -59,6 +61,7 @@ for i, filename in enumerate(filenames):
 
         # Calculate time difference in seconds and append to the list
         time_diff.append(total_seconds2 - (hours1 * 3600 + minutes1 * 60 + seconds1))
+    """
     # Plot Temperature
     axs[0, 0].plot(time_diff, temperature, marker='o', label=filename, markersize=1)
     axs[0, 0].set_xlabel('time (s)')
