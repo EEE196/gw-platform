@@ -99,7 +99,7 @@ for ax, variable, label in zip(axes, variables, labels):
         handles.append(line[0])
 
         # Calculate the median of the current segment for the variable
-        segment_median = np.median(variable[segment])
+        segment_median = np.percentile(variable[segment], 30)
 
         # Plot the median line starting from the beginning of the segment and ending at the end of the segment
         median_line = ax.axhline(y=segment_median, color=segment_colors[i], linestyle='--',
@@ -113,7 +113,7 @@ for ax, variable, label in zip(axes, variables, labels):
                     xytext=(0, 10), textcoords='offset points', ha='center', color=segment_colors[i])
 
     # Add a legend entry with a broken line
-    broken_line = Line2D([], [], linestyle='--', color='black', label='40th Percentile')
+    broken_line = Line2D([], [], linestyle='--', color='black', label='30th Percentile')
     handles.append(broken_line)
 
     ax.set_ylabel(label)
