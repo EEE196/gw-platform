@@ -1,131 +1,114 @@
+
+import sys
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
-from scipy.signal import medfilt
+import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-# List of CSV filenames
-filename = '02-03.csv'
-filenames = [filename]  # Add more filenames if needed
-title = 'Air Quality Parameters'
+# Function definitions
 
-# Read the CSV file
-df = pd.read_csv(filenames[0])
-# Extract the relevant columns
-time_diff = df['UTC Time']
-co2_ppm = df['CO2 ppm']
-so2_ppm = df['SO2 ppm']
-temperature = df['Temperature °']
-humidity = df['Relative Humidity']
-pm25_ppm = df['MC2.5 #/cm^3']
-# Define the function to remove spikes
+def read_csv(filename):
+    df = pd.read_csv(filename)
+    return df
+
 def remove_spikes(data, threshold=2):
-    
+    # Spike removal logic
     return data
 
-# Apply spike removal to the variables
-co2_ppm_filtered = remove_spikes(co2_ppm)
-so2_ppm_filtered = remove_spikes(so2_ppm)
-temperature_filtered = remove_spikes(temperature)
-humidity_filtered = remove_spikes(humidity)
-pm25_ppm_filtered = remove_spikes(pm25_ppm)
+def divide_segments(data_length, num_segments):
+    segment_length = data_length // num_segments
+    remaining_length = data_length % num_segments
 
-"""
+    segments = []
+    start_index = 0
 
-# Extract hours, minutes, and seconds from the first element
-hours1 = int(str(utc_time[0])[:2])
-minutes1 = int(str(utc_time[0])[2:4])
-seconds1 = int(str(utc_time[0])[4:6])
+    for i in range(num_segments):
+        end_index = start_index + segment_length
 
-# Calculate total seconds for the first time value
-total_seconds1 = hours1 * 3600 + minutes1 * 60 + seconds1
+        # Distribute the remaining data points evenly among the segments
+        if remaining_length > 0:
+            end_index += 1
+            remaining_length -= 1
 
-# Initialize a list to store the time differences in seconds
-time_diff = []
+        segment = np.arange(start_index, end_index)
+        segments.append(segment)
+        start_index = end_index
 
-# Loop through the remaining elements and calculate time differences
-for i in range(0, len(utc_time)):
-    current_time = utc_time[i]
-    hours2 = int(str(current_time)[:2])
-    minutes2 = int(str(current_time)[2:4])
-    seconds2 = int(str(current_time)[4:6])
+    return segments
 
-    # Calculate total seconds for the current time value
-    total_seconds2 = hours2 * 3600 + minutes2 * 60 + seconds2
+def plot_segments(axes, segments, variables, labels, segment_labels, segment_colors):
+    handles = []
+    for ax, variable, label in zip(axes, variables, labels):
+        for i, segment in enumerate(segments):
+            segment_label = segment_labels[i]
+            line = ax.plot(segment*3.5, variable[segment], color=segment_colors[i], label=segment_label)
+            handles.append(line[0])
 
+            segment_median = np.percentile(variable[segment], 25)
+            median_line = ax.axhline(y=segment_median, color=segment_colors[i], linestyle='--',
+                                     xmin=segment[0] / len(variable), xmax=segment[-1] / len(variable))
 
-    # Calculate time difference in seconds and append to the list
-    time_diff.append(total_seconds2 - (hours1 * 3600 + minutes1 * 60 + seconds1))
-"""
-# Divide the data into three segments
-segment_length = len(co2_ppm) // 3
+            x_coord = np.mean(segment*3.5)
+            ax.annotate(f'{segment_median:.2f}', xy=(x_coord, segment_median),
+                        xytext=(0, 10), textcoords='offset points', ha='center', color=segment_colors[i])
 
-segment1 = np.arange(segment_length)
-segment2 = np.arange(segment_length, 2 * segment_length)
-segment3 = np.arange(2 * segment_length, len(co2_ppm))
-segments = [
-        segment1,
-        segment2,
-        segment3
-]
+        broken_line = Line2D([], [], linestyle='--', color='black', label='25th Percentile')
+        handles.append(broken_line)
 
-variables = [
-    temperature_filtered,
-    humidity_filtered,
-    co2_ppm_filtered,
-    pm25_ppm_filtered,
-]
+        ax.set_ylabel(label)
 
-labels = [
-    'Temperature (°C)',
-    'Relative Humidity (%)',
-    'CO2 (ppm)',
-    'PM2.5 (#/cm^3)',
-]
-segment_colors = ['blue', 'green', 'orange']  # Colors for each segment
-segment_labels = ['UAV OFF, Enclosed', 'UAV ON, Enclosed', 'UAV ON, Not Enclosed']  # Custom segment labels
-
-# Plot all variables in a single figure with multiple subplots and overlapping segments
-fig, axes = plt.subplots(len(variables), 1, figsize=(10, 15), sharex=True)
+    return handles
 
 
-title = 'Experiment 2: Test %d' % (int(filename[4]))
-fig.suptitle(title, fontsize=16)
+def main(filename, second_segment_start=0, third_segment_start=0):
+    # Read the CSV file
+    df = read_csv(filename)
 
-# Iterate over each variable and its corresponding label
-for ax, variable, label in zip(axes, variables, labels):
-    # Plot each segment of the variable with a label for the legend
-    handles = []  # List to store the legend handles
-    for i, segment in enumerate(segments):
-        segment_label = segment_labels[i]
-        line = ax.plot(np.multiply(segment, 3.5), variable[segment], color=segment_colors[i], label=segment_label)
-        handles.append(line[0])
+    # Extract the relevant columns
+    co2_ppm = df['CO2 ppm']
+    humidity = df['Relative Humidity']
+    temperature = df['Temperature °']
+    pm25_ppm = df['MC2.5 #/cm^3']
 
-        # Calculate the median of the current segment for the variable
-        segment_median = np.percentile(variable[segment], 30)
+    # Apply spike removal to the variables
+    co2_ppm_filtered = remove_spikes(co2_ppm)
+    humidity_filtered = remove_spikes(humidity)
+    temperature_filtered = remove_spikes(temperature)
+    pm25_ppm_filtered = remove_spikes(pm25_ppm)
 
-        # Plot the median line starting from the beginning of the segment and ending at the end of the segment
-        median_line = ax.axhline(y=segment_median, color=segment_colors[i], linestyle='--',
-                                 xmin=segment[0] / len(co2_ppm), xmax=segment[-1] / len(co2_ppm))
+    variables = [temperature_filtered, humidity_filtered, co2_ppm_filtered, pm25_ppm_filtered]
+    labels = ['Temperature (°C)', 'Relative Humidity (%)', 'CO2 (ppm)', 'PM2.5 (#/cm^3)']
+    segment_colors = ['blue', 'green', 'orange']
+    segment_labels = ['UAV OFF, Enclosed', 'UAV ON, Enclosed', 'UAV ON, Not Enclosed']
 
-        # Calculate the x-coordinate for the annotation
-        x_coord = (3.5*segment[0] + 3.5*segment[-1]) / 2
+    num_segments = 3
 
-        # Annotate the median value near the median line
-        ax.annotate(f'{segment_median:.2f}', xy=(x_coord, segment_median),
-                    xytext=(0, 10), textcoords='offset points', ha='center', color=segment_colors[i])
+    # Define the start indices of the segments based on the inputs or default values
+    segments = []
+    segments.append(np.arange(0, second_segment_start))
+    segments.append(np.arange(second_segment_start, third_segment_start))
+    segments.append(np.arange(third_segment_start, len(co2_ppm)))
 
-    # Add a legend entry with a broken line
-    broken_line = Line2D([], [], linestyle='--', color='black', label='30th Percentile')
-    handles.append(broken_line)
+    # Plot all variables in a single figure with multiple subplots and overlapping segments
+    fig, axes = plt.subplots(len(variables), 1, figsize=(10, 15), sharex=True)
+    title = 'Experiment 2: Test ' + filename[4:6]
+    fig.suptitle(title, fontsize=16)
 
-    ax.set_ylabel(label)
+    handles = plot_segments(axes, segments, variables, labels, segment_labels, segment_colors)
+    handles = handles[:4]
+    fig.legend(handles, [handle.get_label() for handle in handles], loc='upper left', fontsize='small')
+    fig.text(0.5, 0.02, 'time (s)', ha='center')
+    plt.tight_layout()
+    fig.subplots_adjust(top=0.92)
+    plt.show()
 
-# Add a common legend for all subplots
-fig.legend(handles, [handle.get_label() for handle in handles], loc='upper left', fontsize='small')
-
-axes[-1].set_xlabel('Data Points')
-plt.tight_layout()
-fig.subplots_adjust(top=0.92)  # Adjust the spacing between suptitle and subplots
-plt.show()
+if __name__ == "__main__":
+    # Retrieve the filename and start indices of the second and third segments from the command line arguments
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        second_segment_start = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+        third_segment_start = int(sys.argv[3]) if len(sys.argv) > 3 else 0
+        main(filename, second_segment_start, third_segment_start)
+    else:
+        print("Please provide a filename as a command line argument.")
+        sys.exit(1)
