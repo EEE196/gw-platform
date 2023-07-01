@@ -10,7 +10,7 @@
 void writeCollatedData(FILE* file, const CollatedDataSD* data) {
     
     // Write GPS data
-    fprintf(file, "%f,%f,%f,%d,", data->GPS_Data.nmea_longitude, data->GPS_Data.nmea_latitude, data->GPS_Data.utc_time, data->GPS_Data.date);
+    fprintf(file, "%f,%f,%f,%f,%d,", data->GPS_Data.dec_longitude, data->GPS_Data.dec_latitude, data->GPS_Data.altitude, data->GPS_Data.utc_time, data->GPS_Data.date);
 
     // Write CO data
     fprintf(file, "%f,%d,%f,%f,", data->CO_Data.co2_ppm, data->PM_Data.SO_ppm, data->CO_Data.temperature, data->CO_Data.relative_humidity);
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
 				// Write column names
             			FILE* dataFile = fopen(filename, "w");
-				fprintf(dataFile, "Longitude E,Latitude N,UTC Time,Date,CO2 ppm,SO2 ppm,Temperature °,Relative Humidity,MC1.0 #/cm^3,MC2.5 #/cm^3,MC4.0 #/cm^3,MC10.0 #/cm^3,NC0.5 #/cm^3,NC1.0 #/cm^3,NC2.5 #/cm^3,NC4.0 #/cm^3,NC10.0 #/cm^3,Typical Particle Size\n");
+				fprintf(dataFile, "Longitude,Latitude,UTC Time,Date,CO2,SO2,Temperature,Relative Humidity,MC1.0 #/cm^3,MC2.5 #/cm^3,MC4.0 #/cm^3,MC10.0 #/cm^3,NC0.5 #/cm^3,NC1.0 #/cm^3,NC2.5 #/cm^3,NC4.0 #/cm^3,NC10.0 #/cm^3,Typical Particle Size\n");
 
  				while (fread(buffer, sizeof(char), sizeof(collatedData), fileptr) == sizeof(collatedData)) {
                     			memcpy(&collatedData, buffer, sizeof(collatedData));

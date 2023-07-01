@@ -13,8 +13,9 @@ struct sps30_measurement_SD {
 };
 typedef struct{
     // GGA - Global Positioning System Fixed Data
-    float nmea_longitude;
-    float nmea_latitude;
+    float dec_longitude;
+    float dec_latitude;
+    float altitude;
     float utc_time;
     // RMC - Recommended Minimmum Specific GNS Data
     uint32_t date;
@@ -26,9 +27,7 @@ typedef struct {
 	} CO_t;
 struct sps30_measurement {
     float mc_2p5;
-    float mc_10p0;
     float nc_2p5;
-    float nc_10p0;
     uint16_t SO_ppm;
 };
 typedef struct DATA
