@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
 				// Write column names
             			FILE* dataFile = fopen(filename, "w");
-				fprintf(dataFile, "Longitude,Latitude,UTC Time,Date,CO2,SO2,Temperature,Relative Humidity,MC1.0 #/cm^3,MC2.5 #/cm^3,MC4.0 #/cm^3,MC10.0 #/cm^3,NC0.5 #/cm^3,NC1.0 #/cm^3,NC2.5 #/cm^3,NC4.0 #/cm^3,NC10.0 #/cm^3,Typical Particle Size\n");
+				fprintf(dataFile, "Longitude,Latitude,Altitude,UTC Time,Date,CO2,SO2,Temperature,Relative Humidity,MC1.0 #/cm^3,MC2.5 #/cm^3,MC4.0 #/cm^3,MC10.0 #/cm^3,NC0.5 #/cm^3,NC1.0 #/cm^3,NC2.5 #/cm^3,NC4.0 #/cm^3,NC10.0 #/cm^3,Typical Particle Size\n");
 
  				while (fread(buffer, sizeof(char), sizeof(collatedData), fileptr) == sizeof(collatedData)) {
                     			memcpy(&collatedData, buffer, sizeof(collatedData));
